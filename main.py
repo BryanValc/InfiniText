@@ -93,10 +93,33 @@ def create_submodel(model, letters_bit_string, length_bit_string):
 
 def get_word_index(target_text, submodel):
     words = sorted(submodel.keys())
-    print(words)
     word_to_index = {word: index for index, word in enumerate(words)}
     first_word = target_text.split()[0] if target_text.strip() != "" else None
     return format(word_to_index.get(first_word, 0), '016b')
+
+
+def find_matching_seed(target_text, model, word_index, word_count):
+    words = sorted(model.keys())
+    word_to_index = {word: index for index, word in enumerate(words)}
+    target_words = target_text.split()
+
+    for seed in range(2 ** 16):  # try all possible 16-bit seeds
+        r.seed(seed)
+        sequence = [words[word_index]]
+
+        for _ in range(word_count - 1):
+            if sequence[-1] not in model:
+                break  # this sequence can't match the target sequence
+            following_words = list(model[sequence[-1]].keys())
+            following_weights = list(model[sequence[-1]].values())
+            next_word = r.choices(following_words, following_weights)[0]
+            sequence.append(next_word)
+
+        if sequence == target_words:
+            return seed  # found a matching seed
+
+    return None  # no matching seed found
+
 
 
 text_file = open("input/alice.txt", "r")
@@ -114,11 +137,16 @@ print(f"Word count bit string: {bit_word_count}")
 
 # create a submodel based on the target text discrimination parameters
 submodel = create_submodel(model, bit_string_letters, bit_string_length)
-print_model(submodel)
+# print_model(submodel)
 
-# get the index of the first word in the target text
+# get the new model index of the first word in the target text
 target_text = open("input/target.txt", "r")
-word_index = get_word_index(target_text.read(), submodel)
+bit_word_index = get_word_index(target_text.read(), submodel)
 
-print(f"Word index: {word_index}")
+print(f"Word index: {bit_word_index}")
+
+# find a matching seed
+target_text = open("input/target.txt", "r")
+seed = find_matching_seed(target_text.read(), submodel, int(bit_word_index, 2), int(bit_word_count, 2))
+print(f"Seed: {seed}")
 
