@@ -91,6 +91,14 @@ def create_submodel(model, letters_bit_string, length_bit_string):
 
     return submodel
 
+def get_word_index(target_text, submodel):
+    words = sorted(submodel.keys())
+    print(words)
+    word_to_index = {word: index for index, word in enumerate(words)}
+    first_word = target_text.split()[0] if target_text.strip() != "" else None
+    return format(word_to_index.get(first_word, 0), '016b')
+
+
 text_file = open("input/alice.txt", "r")
 target_text = open("input/target.txt", "r")
 
@@ -107,4 +115,10 @@ print(f"Word count bit string: {bit_word_count}")
 # create a submodel based on the target text discrimination parameters
 submodel = create_submodel(model, bit_string_letters, bit_string_length)
 print_model(submodel)
+
+# get the index of the first word in the target text
+target_text = open("input/target.txt", "r")
+word_index = get_word_index(target_text.read(), submodel)
+
+print(f"Word index: {word_index}")
 
