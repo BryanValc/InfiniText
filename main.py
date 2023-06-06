@@ -41,6 +41,8 @@ def print_model(model):
         for following_word, weight in weights.items():
             print(f"\t{following_word}: {weight}")
 
+
+
 def encode_target_text(text):
     # in this method we create a 26 bit binary string that represents true or false for each letter of the alphabet in the target text
     # we will use this to discriminate words from the model that are not in the target text, for instance, if the text only contain the
@@ -51,10 +53,12 @@ def encode_target_text(text):
     alphabet = 'abcdefghijklmnopqrstuvwxyz'
     bit_string_letters = ['0'] * 26
     bit_string_length = ['0'] * 16
+    bit_string_word_count = ['0'] * 8
 
     words = re.findall(r'\b\w+\b', text)
     unique_letters = set(text.lower())  # gets all unique letters in the text
     word_lengths = set(len(word) for word in words)  # gets all unique word lengths in the text
+    word_count = len(words)
 
     # Check if the letter is in unique_letters
     for i, letter in enumerate(alphabet):
@@ -66,18 +70,41 @@ def encode_target_text(text):
         if length <= 16:  # we only have space for lengths up to 16
             bit_string_length[length - 1] = '1'  # subtract 1 because indices start at 0
 
-    return ''.join(bit_string_letters), ''.join(bit_string_length)
+    # Convert the word_count to 8-bit binary and store it in bit_string_word_count
+    if word_count <= 255:
+        bit_string_word_count = list(format(word_count, '08b'))
 
+    return ''.join(bit_string_letters), ''.join(bit_string_length), ''.join(bit_string_word_count)
+
+def create_submodel(model, letters_bit_string, length_bit_string):
+    submodel = defaultdict(lambda: defaultdict(int))
+
+    alphabet = 'abcdefghijklmnopqrstuvwxyz'
+    allowed_letters = {letter for i, letter in enumerate(alphabet) if letters_bit_string[i] == '1'}
+    allowed_lengths = {i + 1 for i in range(16) if length_bit_string[i] == '1'} # indices are 0-based, lengths are 1-based
+
+    for word, weights in model.items():
+        if set(word).issubset(allowed_letters) and len(word) in allowed_lengths:
+            for following_word, weight in weights.items():
+                if set(following_word).issubset(allowed_letters) and len(following_word) in allowed_lengths:
+                    submodel[word][following_word] = weight
+
+    return submodel
 
 text_file = open("input/alice.txt", "r")
 target_text = open("input/target.txt", "r")
 
 save_model(text_file)
 model = load_model('model.json')
-print_model(model)
+# print_model(model)
 
 # encode the target text for discrimination of words
-bin_string_letters, bin_string_length = encode_target_text(target_text.read())
-print(f"Letters bit string: {bin_string_letters}")
-print(f"Length bit string: {bin_string_length}")
+bit_string_letters, bit_string_length, bit_word_count = encode_target_text(target_text.read())
+print(f"Letters bit string: {bit_string_letters}")
+print(f"Length bit string: {bit_string_length}")
+print(f"Word count bit string: {bit_word_count}")
+
+# create a submodel based on the target text discrimination parameters
+submodel = create_submodel(model, bit_string_letters, bit_string_length)
+print_model(submodel)
 
