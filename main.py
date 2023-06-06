@@ -131,9 +131,9 @@ model = load_model('model.json')
 
 # encode the target text for discrimination of words
 bit_string_letters, bit_string_length, bit_word_count = encode_target_text(target_text.read())
-print(f"Letters bit string: {bit_string_letters}")
-print(f"Length bit string: {bit_string_length}")
-print(f"Word count bit string: {bit_word_count}")
+# print(f"Letters bit string: {bit_string_letters}")
+# print(f"Length bit string: {bit_string_length}")
+# print(f"Word count bit string: {bit_word_count}")
 
 # create a submodel based on the target text discrimination parameters
 submodel = create_submodel(model, bit_string_letters, bit_string_length)
@@ -143,10 +143,10 @@ submodel = create_submodel(model, bit_string_letters, bit_string_length)
 target_text = open("input/target.txt", "r")
 bit_word_index = get_word_index(target_text.read(), submodel)
 
-print(f"Word index: {bit_word_index}")
+# print(f"Word index: {bit_word_index}")
 
 # find a matching seed
 target_text = open("input/target.txt", "r")
 seed = find_matching_seed(target_text.read(), submodel, int(bit_word_index, 2), int(bit_word_count, 2))
-print(f"Seed: {seed}")
+# print(f"Seed: {seed}")
 
