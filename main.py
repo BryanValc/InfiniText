@@ -101,7 +101,7 @@ def find_matching_seed(target_text, model, word_index, word_count):
     word_to_index = {word: index for index, word in enumerate(words)}
     target_words = target_text.split()
 
-    for seed in range(2 ** 16):  # try all possible 16-bit seeds
+    for seed in range(2 ** 32):  # try all possible 16-bit seeds
         r.seed(seed)
         sequence = [words[word_index]]
 
@@ -112,6 +112,7 @@ def find_matching_seed(target_text, model, word_index, word_count):
             following_weights = list(model[sequence[-1]].values())
             next_word = r.choices(following_words, following_weights)[0]
             sequence.append(next_word)
+
 
         if sequence == target_words:
             return seed  # found a matching seed
@@ -143,6 +144,7 @@ def recreate_text(model, letters_bit_string, length_bit_string, word_count_bit_s
         following_weights = list(submodel[sequence[-1]].values())
         next_word = r.choices(following_words, following_weights)[0]
         sequence.append(next_word)
+
 
     # Join the sequence into a single string
     text = ' '.join(sequence)
