@@ -41,8 +41,6 @@ def print_model(model):
         for following_word, weight in weights.items():
             print(f"\t{following_word}: {weight}")
 
-
-
 def encode_target_text(text):
     # in this method we create a 26 bit binary string that represents true or false for each letter of the alphabet in the target text
     # we will use this to discriminate words from the model that are not in the target text, for instance, if the text only contain the
