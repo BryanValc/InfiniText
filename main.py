@@ -2,6 +2,7 @@ import json
 import random as r
 import re
 from collections import defaultdict
+from concurrent.futures import ProcessPoolExecutor
 
 def save_model(file):
     # crete a list of words out of the text, first splitting the text to remove spaces and line breaks
@@ -101,7 +102,7 @@ def find_matching_seed(target_text, model, word_index, word_count):
     word_to_index = {word: index for index, word in enumerate(words)}
     target_words = target_text.split()
 
-    for seed in range(2 ** 32):  # try all possible 16-bit seeds
+    for seed in range(2 ** 32):  # try all possible 32-bit seeds
         r.seed(seed)
         sequence = [words[word_index]]
 
@@ -151,37 +152,39 @@ def recreate_text(model, letters_bit_string, length_bit_string, word_count_bit_s
 
     return text
 
-text_file = open("input/alice.txt", "r")
-target_text = open("input/target.txt", "r")
+#static tests
 
-save_model(text_file)
-model = load_model('model.json')
-# print_model(model)
-
-# encode the target text for discrimination of words
-bit_string_letters, bit_string_length, bit_word_count = encode_target_text(target_text.read())
-print(f"Letters bit string: {bit_string_letters}")
-print(f"Length bit string: {bit_string_length}")
-print(f"Word count bit string: {bit_word_count}")
-
-# create a submodel based on the target text discrimination parameters
-submodel = create_submodel(model, bit_string_letters, bit_string_length)
+# text_file = open("input/alice.txt", "r")
+# target_text = open("input/target.txt", "r")
+#
+# save_model(text_file)
+# model = load_model('model.json')
+# # print_model(model)
+#
+# # encode the target text for discrimination of words
+# bit_string_letters, bit_string_length, bit_word_count = encode_target_text(target_text.read())
+# print(f"Letters bit string: {bit_string_letters}")
+# print(f"Length bit string: {bit_string_length}")
+# print(f"Word count bit string: {bit_word_count}")
+#
+# # create a submodel based on the target text discrimination parameters
+# submodel = create_submodel(model, bit_string_letters, bit_string_length)
 # print_model(submodel)
-
-# get the new model index of the first word in the target text
-target_text = open("input/target.txt", "r")
-bit_word_index = get_word_index(target_text.read(), submodel)
-
-print(f"Word index: {bit_word_index}")
-
-# find a matching seed
-target_text = open("input/target.txt", "r")
-seed = find_matching_seed(target_text.read(), submodel, int(bit_word_index, 2), int(bit_word_count, 2))
-print(f"Seed: {seed}")
-
-final_text = recreate_text(model, bit_string_letters, bit_string_length, bit_word_count, bit_word_index, seed)
-
-print(final_text + "... This was a triumph!")
+#
+# # get the new model index of the first word in the target text
+# target_text = open("input/target.txt", "r")
+# bit_word_index = get_word_index(target_text.read(), submodel)
+#
+# print(f"Word index: {bit_word_index}")
+#
+# # find a matching seed
+# target_text = open("input/target.txt", "r")
+# seed = find_matching_seed(target_text.read(), submodel, int(bit_word_index, 2), int(bit_word_count, 2))
+# print(f"Seed: {seed}")
+#
+# final_text = recreate_text(model, bit_string_letters, bit_string_length, bit_word_count, bit_word_index, seed)
+#
+# print(final_text + "... This was a triumph!")
 
 
 
